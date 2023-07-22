@@ -3,7 +3,7 @@
   "description": "boxagenciawebchat",
   "productName": "ChatBoxAgenciaWeb",
   "main": "app/main.js",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "author": {
     "name": "Paloma Macetko",
     "email": "cmacetko@gmail.com",
