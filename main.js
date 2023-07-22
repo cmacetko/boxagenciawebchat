@@ -10,16 +10,12 @@ const isDev = require('electron-is-dev');
 %USERPROFILE%\AppData\Roaming\{app name}\logs\{process type}.log
 */
 
-/*
-var squirrelStartup = require('electron-squirrel-startup');
-
-if( squirrelStartup )
+if(require('electron-squirrel-startup'))
 {
-
+    
     app.quit();
 
 }
-*/
 
 var CfgGlobal = {
 AppNome: "Chat - Box Agência Web",
