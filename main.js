@@ -25,8 +25,7 @@ var CfgGlobal = {
 AppNome: "Chat - Box Agência Web",
 Icone: path.join(__dirname, "assets", "icon.png"),
 Link: "https://projetos.boxagenciaweb.com.br/Sistema/Login/LoginApp.php?SubPag=AppChat&UrlDir=%2Fchat%2F",
-//CheckForUpdatesInterval: 1 * 60 * 60 * 1000
-CheckForUpdatesInterval: 5 * 60 * 1000
+CheckForUpdatesInterval: 1 * 60 * 60 * 1000
 };
 
 var CfgLocal = {
