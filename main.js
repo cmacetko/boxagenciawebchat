@@ -368,7 +368,7 @@ function setupIpcMain()
 
         ipcMain.on('UserToken', (_event, Valor) => {
 
-            CfgGlobal.UserToken = Valor;
+            CfgLocal.UserToken = Valor;
 
             CfgLocal_Set();
 
