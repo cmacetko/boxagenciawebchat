@@ -15,16 +15,12 @@ var isDev = require('electron-is-dev');
 %USERPROFILE%\AppData\Roaming\{app name}\logs\{process type}.log
 */
 
-var squirrelStartup = require('electron-squirrel-startup');
-if (squirrelStartup) {
-  _electron.app.quit();
-}
+setupHandleSquirrelEvent();
 var CfgGlobal = {
   AppNome: "Chat - Box Agência Web",
   Icone: path.join(__dirname, "assets", "icon.png"),
   Link: "https://projetos.boxagenciaweb.com.br/Sistema/Login/LoginApp.php?SubPag=AppChat&UrlDir=%2Fchat%2F",
-  //CheckForUpdatesInterval: 1 * 60 * 60 * 1000
-  CheckForUpdatesInterval: 5 * 60 * 1000
+  CheckForUpdatesInterval: 1 * 60 * 60 * 1000
 };
 var CfgLocal = {
   UserToken: ""
@@ -100,7 +96,9 @@ function getWindow() {
     win.on('close', function (e) {});
     win.on('closed', function () {
       win = null;
-      tray.destroy();
+      if (tray) {
+        tray.destroy();
+      }
     });
     win.on('focus', function () {
       win.webContents.send('WinFocus', {
@@ -218,7 +216,7 @@ function setupIpcMain() {
       _electron.app.setBadgeCount(Valor);
     });
     _electron.ipcMain.on('UserToken', function (_event, Valor) {
-      CfgGlobal.UserToken = Valor;
+      CfgLocal.UserToken = Valor;
       CfgLocal_Set();
     });
   } catch (err) {
@@ -226,14 +224,14 @@ function setupIpcMain() {
   }
 }
 function setupUpdate() {
+  var FeedUrl = 'https://update.electronjs.org/cmacetko/boxagenciawebchat/' + process.platform + '-' + process.arch + '/' + _electron.app.getVersion();
   if (isDev == true) {
     return false;
   }
   try {
-    var feedURL = 'https://update.electronjs.org/cmacetko/boxagenciawebchat/' + process.platform + '-' + process.arch + '/' + _electron.app.getVersion();
     log.log("setupUpdate");
-    log.log("feedURL", feedURL);
-    _electron.autoUpdater.setFeedURL(feedURL);
+    log.log("FeedUrl", FeedUrl);
+    _electron.autoUpdater.setFeedURL(FeedUrl);
     _electron.autoUpdater.on('error', function (err) {
       log.log("setupUpdate - error", err);
     });
@@ -270,14 +268,63 @@ function setupUpdate() {
     log.log("setupUpdate - err", err);
   }
 }
-function CfgLocal_Get() {
+function setupHandleSquirrelEvent() {
+  if (process.argv.length === 1) {
+    return false;
+  }
   try {
-    var NDads1 = fs.readFileSync(path.join(_electron.app.getPath('userData'), "CfgLocal.json"));
-    var NDads2 = NDads1.toString('utf8');
-    var NDads3 = JSON.parse(NDads2);
-    if (NDads3.hasOwnProperty("UserToken")) {
-      if (NDads3.UserToken != "") {
-        CfgLocal.UserToken = NDads3.UserToken;
+    var ChildProcess = require('child_process');
+    var _path = require('path');
+    var appFolder = _path.resolve(process.execPath, '..');
+    var rootAtomFolder = _path.resolve(appFolder, '..');
+    var updateDotExe = _path.resolve(_path.join(rootAtomFolder, 'Update.exe'));
+    var exeName = _path.basename(process.execPath);
+    var spawn = function spawn(command, args) {
+      var spawnedProcess, error;
+      try {
+        spawnedProcess = ChildProcess.spawn(command, args, {
+          detached: true
+        });
+      } catch (error) {}
+      return spawnedProcess;
+    };
+    var spawnUpdate = function spawnUpdate(args) {
+      return spawn(updateDotExe, args);
+    };
+    var squirrelEvent = process.argv[1];
+    switch (squirrelEvent) {
+      case '--squirrel-install':
+      case '--squirrel-updated':
+        spawnUpdate(['--createShortcut', exeName]);
+        setTimeout(_electron.app.quit, 1000);
+        return true;
+        break;
+      case '--squirrel-uninstall':
+        spawnUpdate(['--removeShortcut', exeName]);
+        setTimeout(_electron.app.quit, 1000);
+        return true;
+        break;
+      case '--squirrel-obsolete':
+        _electron.app.quit();
+        return true;
+        break;
+    }
+  } catch (err) {
+    log.log("setupHandleSquirrelEvent - err", err);
+  }
+}
+;
+function CfgLocal_Get() {
+  var PathCfg = path.join(_electron.app.getPath('userData'), "CfgLocal.json");
+  try {
+    if (fs.existsSync(PathCfg)) {
+      var NDads1 = fs.readFileSync(PathCfg);
+      var NDads2 = NDads1.toString('utf8');
+      var NDads3 = JSON.parse(NDads2);
+      if (NDads3.hasOwnProperty("UserToken")) {
+        if (NDads3.UserToken != "") {
+          CfgLocal.UserToken = NDads3.UserToken;
+        }
       }
     }
   } catch (err) {

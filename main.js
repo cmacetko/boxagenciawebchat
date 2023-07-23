@@ -10,12 +10,7 @@ const isDev = require('electron-is-dev');
 %USERPROFILE%\AppData\Roaming\{app name}\logs\{process type}.log
 */
 
-if(require('electron-squirrel-startup'))
-{
-    
-    app.quit();
-
-}
+setupHandleSquirrelEvent();
 
 var CfgGlobal = {
 AppNome: "Chat - Box Agência Web",
@@ -158,7 +153,12 @@ function getWindow()
         
             win = null;
 
-            tray.destroy();
+            if( tray )
+            {
+
+                tray.destroy();
+            
+            }
 
         });
 
@@ -459,6 +459,86 @@ function setupUpdate()
     }
 
 }
+
+function setupHandleSquirrelEvent() {
+
+    if(process.argv.length === 1) 
+    {
+
+        return false;
+
+    }
+
+    try {
+
+        const ChildProcess = require('child_process');
+        const path = require('path');
+
+        const appFolder = path.resolve(process.execPath, '..');
+        const rootAtomFolder = path.resolve(appFolder, '..');
+        const updateDotExe = path.resolve(path.join(rootAtomFolder, 'Update.exe'));
+        const exeName = path.basename(process.execPath);
+
+        const spawn = function(command, args) {
+        let spawnedProcess, error;
+
+        try {
+
+            spawnedProcess = ChildProcess.spawn(command, args, {detached: true});
+
+        } catch (error) {}
+
+            return spawnedProcess;
+
+        };
+
+        const spawnUpdate = function(args) {
+
+            return spawn(updateDotExe, args);
+
+        };
+
+        const squirrelEvent = process.argv[1];
+
+        switch (squirrelEvent) 
+        {
+
+            case '--squirrel-install':
+            case '--squirrel-updated':
+
+                spawnUpdate(['--createShortcut', exeName]);
+                setTimeout(app.quit, 1000);
+
+                return true;
+
+            break;
+
+            case '--squirrel-uninstall':
+
+                spawnUpdate(['--removeShortcut', exeName]);
+                setTimeout(app.quit, 1000);
+
+                return true;
+
+            break;
+
+            case '--squirrel-obsolete':
+
+                app.quit();
+                
+                return true;
+
+            break;
+
+        }
+
+    }catch (err){
+
+        log.log("setupHandleSquirrelEvent - err", err);
+        
+    }
+
+};
 
 function CfgLocal_Get()
 {
