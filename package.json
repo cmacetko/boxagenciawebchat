@@ -3,7 +3,7 @@
   "description": "boxagenciawebchat",
   "productName": "ChatBoxAgenciaWeb",
   "main": "app/main.js",
-  "version": "1.0.46",
+  "version": "1.0.47",
   "author": {
     "name": "Paloma Macetko",
     "email": "cmacetko@gmail.com",
@@ -73,14 +73,8 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "win": {
-            "icon": "assets/icon.ico"
-          },
-          "mac": {
-            "icon": "assets/icon.icns"
-          }
+        "icon": "assets/icon"
       },
-      
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
